@@ -147,6 +147,12 @@ class TitanPress {
 
 	}
 
+	function get_nonce_id( $controller, $method ) {
+
+		return 'titanpress-' . strtolower($controller) . '-' . strtolower($method);
+
+	}
+
 	function error($messages = array(), $status = '400') {
 
 		if (!$messages) {

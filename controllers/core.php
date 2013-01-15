@@ -5,7 +5,7 @@ class TitanPress_Core_Controller {
 	function __construct() {
 	}
 
-	function get_nonce() {
+	function nonce() {
 
 		global $titanpress;
 
@@ -21,15 +21,12 @@ class TitanPress_Core_Controller {
 		if (!$method)
 			$titanpress->error('Missing "method" parameter');
 
-		$nonce = $this->create_nonce($controller, $method);
+		$nonce = wp_create_nonce( $titanpress->get_nonce_id($controller, $method) );
 
-		return $nonce;
+		$data = array();
+		$data['nonce'] = $nonce;
 
-	}
-
-	private function create_nonce($controller, $method) {
-
-		return wp_create_nonce('titanpress-' . strtolower($controller) . '-' . strtolower($method));
+		return $data;
 
 	}
 

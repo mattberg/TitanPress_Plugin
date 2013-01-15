@@ -21,10 +21,10 @@ class TitanPress_Post {
 		if (function_exists('get_coauthors')) {
 			$coauthors = get_coauthors();
 			foreach ($coauthors as $coauthor) {
-				$this->author[] = new TitanPress_Author( $coauthor->ID );
+				$this->author[] = new TitanPress_User( $coauthor->ID );
 			}
 		} else {
-			$this->author[] = new TitanPress_Author( $post->post_author );
+			$this->author[] = new TitanPress_User( $post->post_author );
 		}
 
 		$this->attachments = array();

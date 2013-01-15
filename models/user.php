@@ -1,6 +1,6 @@
 <?php
 
-class TitanPress_Author {
+class TitanPress_User {
 
 	function __construct( $id ) {
 
