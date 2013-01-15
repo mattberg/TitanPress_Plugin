@@ -2,21 +2,31 @@
 
 class TitanPress_Attachment {
 
-	function __construct($attachment) {
+	function __construct( $obj = null ) {
 
-		$this->id = $attachment->ID;
-		$this->guid = $attachment->guid;
-		$this->slug = $attachment->post_name;
-		$this->title = apply_filters( 'the_title', $attachment->post_title );
-		$this->thumbnail_url = $this->get_image_object($attachment->ID, 'thumbnail');
-		$this->medium_url = $this->get_image_object($attachment->ID, 'medium');
-		$this->large_url = $this->get_image_object($attachment->ID, 'large');
-		$this->full_url = $this->get_image_object($attachment->ID, 'full');
-		$this->mime_type = $attachment->post_mime_type;
+		if (is_object( $obj )) {
+			$this->import( $obj );
+		} elseif (is_int( $obj )) {
+			$this->import( get_post($obj) );
+		}
 
 	}
 
-	private function get_image_object($id, $size) {
+	private function import( $obj ) {
+
+		$this->id = $obj->ID;
+		$this->guid = $obj->guid;
+		$this->slug = $obj->post_name;
+		$this->title = apply_filters( 'the_title', $obj->post_title );
+		$this->type = $obj->post_mime_type;
+		$this->thumbnail = $this->get_image_object($obj->ID, 'thumbnail');
+		$this->medium = $this->get_image_object($obj->ID, 'medium');
+		$this->large = $this->get_image_object($obj->ID, 'large');
+		$this->full = $this->get_image_object($obj->ID, 'full');
+
+	}
+
+	private function get_image_object( $id, $size ) {
 
 		$image = new stdClass;
 

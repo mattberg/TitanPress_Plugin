@@ -21,7 +21,7 @@ class TitanPress_Post {
 		if (function_exists('get_coauthors')) {
 			$coauthors = get_coauthors();
 			foreach ($coauthors as $coauthor) {
-				$this->author[] = new TitanPress_User( $coauthor->ID );
+				$this->author[] = new TitanPress_User( $coauthor );
 			}
 		} else {
 			$this->author[] = new TitanPress_User( $post->post_author );
@@ -34,17 +34,13 @@ class TitanPress_Post {
 			'numberposts' => -1,
 			'post_status' => 'publish',
 		));
-		if (!empty($attachments)) {
-			foreach ($attachments as $attachment) {
-				$this->attachments[] = new TitanPress_Attachment( $attachment );
-			}
+		foreach ($attachments as $attachment) {
+			$this->attachments[] = new TitanPress_Attachment( $attachment );
 		}
 
-		$this->thumbnail = new stdClass;
-		if (has_post_thumbnail( $post->ID )) {
-			$thumbnail_id = get_post_thumbnail_id();
-			$thumbnail = get_post($thumbnail_id);
-			$this->thumbnail = new TitanPress_Attachment( $thumbnail );
+		$this->featuredImage = new stdClass;
+		if (has_post_thumbnail()) {
+			$this->featuredImage = new TitanPress_Attachment( (int) get_post_thumbnail_id() );
 		}
 
 	}

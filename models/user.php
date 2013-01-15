@@ -2,13 +2,23 @@
 
 class TitanPress_User {
 
-	function __construct( $id ) {
+	function __construct( $obj = null ) {
 
-		$this->id = $id;
-		$this->username = get_the_author_meta('user_login', $id);
-		$this->email = get_the_author_meta('user_email', $id);
-		$this->displayName = get_the_author_meta('display_name', $id);
-		$this->nickname = get_the_author_meta('nickname', $id);
+		if (is_object( $obj )) {
+			$this->import( $obj );
+		} elseif (is_int( $obj )) {
+			$this->import( get_user_by('id', $obj) );
+		}
+
+	}
+
+	private function import( $obj ) {
+
+		$this->id = $obj->ID;
+		$this->username = $obj->user_login;
+		$this->email = $obj->user_email;
+		$this->displayName = $obj->display_name;
+		$this->nickname = $obj->nickname;
 
 	}
 
