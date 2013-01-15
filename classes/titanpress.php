@@ -5,6 +5,7 @@ class TitanPress {
 	function __construct() {
 
 		$this->response = new TitanPress_Response();
+		$this->html2text = new TitanPress_Html2Text();
 
 		$this->setup_models();
 
@@ -17,7 +18,11 @@ class TitanPress {
 			return;
 		}
 
-		$this->options = $this->get_options();
+		$this->base_url = get_option( 'titanpress_base_url', 'titanpress' );
+		
+		$this->api_key = get_option( 'titanpress_api_key' );
+		if (!$this->api_key)
+			add_action( 'admin_notices', array( $this, 'api_key_warning' ) );
 
 	}
 
@@ -25,10 +30,14 @@ class TitanPress {
 
 		global $wp_query;
 
-		$controller = $wp_query->get('titanpress_controller');
-		$method = $wp_query->get('titanpress_method');
+		$controller = $wp_query->get( 'titanpress_controller' );
+		$method = $wp_query->get( 'titanpress_method' );
 
 		if ($controller && $method) {
+
+			$api_key = $_GET['api_key'];
+			if (!$this->api_key || $api_key !== $this->api_key)
+				$this->error('Invalid API Key', '401');
 
 			$controllers = $this->get_controllers();
 
@@ -44,6 +53,9 @@ class TitanPress {
 
 			if (!method_exists($controller_obj, $method))
 				$this->error('Method not found', '404');
+
+			if (!$this->is_method_public($controller_obj, $method))
+				$this->error('Method not available', '404');
 
 			$data = $controller_obj->$method();
 
@@ -153,20 +165,6 @@ class TitanPress {
 
 	}
 
-	function get_options() {
-
-		$defaults = array(
-			'base_url' => 'titanpress'
-		);
-
-		$options = get_option('titanpress');
-		if (!is_array($options))
-			$options = array();
-
-		return array_merge($defaults, $options);
-
-	}
-
 	function activate() {
 		$this->flush_rules();
 	}
@@ -182,12 +180,12 @@ class TitanPress {
 
 	function rewrite_rules($wp_rules) {
 
-		if (empty($this->options['base_url']))
+		if (empty($this->base_url))
 			return $wp_rules;
 
 		$new_rules = array();
-		$new_rules[$this->options['base_url'] . '/?$'] = 'index.php?titanpress_controller=default&titanpress_method=default';
-		$new_rules[$this->options['base_url'] . '/([^/]+)/([^/]+)/?$'] = 'index.php?titanpress_controller=$matches[1]&titanpress_method=$matches[2]';
+		$new_rules[$this->base_url . '/?$'] = 'index.php?titanpress_controller=default&titanpress_method=default';
+		$new_rules[$this->base_url . '/([^/]+)/([^/]+)/?$'] = 'index.php?titanpress_controller=$matches[1]&titanpress_method=$matches[2]';
 
 		return $new_rules + $wp_rules;
 
@@ -201,8 +199,56 @@ class TitanPress {
 
 	}
 
+	function save_post( $post_id ) {
+
+		$post_content_filtered = null;
+
+		$post = get_posts( array(
+			'p' => 1,
+		) );
+
+		remove_action( 'save_post', array( $this, 'save_post' ) );
+		wp_update_post( array('ID' => $post_id, 'post_content_filtered' => $post_content_filtered ) );
+		add_action( 'save_post', array( $this, 'save_post' ) );
+
+	}
+
+	function the_title_plain( $title ) {
+
+		return html_entity_decode( strip_tags( $title ), ENT_QUOTES );
+
+	}
+
+	function the_content_plain( $content ) {
+
+		return $this->html2text->convert( $content );
+
+	}
+
+	function the_excerpt_plain( $excerpt ) {
+
+		return $this->html2text->convert( $excerpt );
+
+	}
+
 	function php_version_warning() {
-		echo '<div id="titanpress-warning" class="error"><p>Sorry, JSON API requires PHP version 5.0 or greater.</p></div>';
+
+		echo '<div id="titanpress-php-warning" class="error"><p>Sorry, TitanPress requires PHP version 5.0 or greater.</p></div>';
+
+	}
+
+	function api_key_warning() {
+
+		echo '<div id="titanpress-api-key-warning" class="error"><p>TitanPress API Key must be set. <a href="' . esc_url( admin_url('admin.php?page=titanpress') ) . '">TitanPress Settings</a>.</p></div>';
+
+	}
+
+	function is_method_public($class, $method) {
+
+		$refl = new ReflectionMethod($class, $method);
+
+		return $refl->isPublic();
+
 	}
 
 }

@@ -17,6 +17,7 @@ if ( is_admin() )
 
 require_once TITANPRESS_PLUGIN_PATH . '/classes/titanpress.php';
 require_once TITANPRESS_PLUGIN_PATH . '/classes/response.php';
+require_once TITANPRESS_PLUGIN_PATH . '/classes/html2text.php';
 
 $titanpress = new TitanPress();
 
@@ -28,3 +29,9 @@ add_action( 'template_redirect', array( $titanpress, 'template_redirect' ) );
 
 add_filter( 'rewrite_rules_array', array( $titanpress, 'rewrite_rules' ) );
 add_filter( 'query_vars', array( $titanpress, 'query_vars' ) );
+
+add_action( 'save_post', array( $titanpress, 'save_post' ) );
+
+add_filter( 'the_title_plain', array( $titanpress, 'the_title_plain' ) );
+add_filter( 'the_content_plain', array( $titanpress, 'the_content_plain' ) );
+add_filter( 'the_excerpt_plain', array( $titanpress, 'the_excerpt_plain' ) );
