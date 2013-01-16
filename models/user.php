@@ -20,6 +20,9 @@ class TitanPress_User {
 		$this->displayName = $obj->display_name;
 		$this->nickname = $obj->nickname;
 
+		if (isset($obj->auth))
+			$this->auth = $obj->auth;
+
 	}
 
 }

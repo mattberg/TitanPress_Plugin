@@ -14,15 +14,19 @@ class TitanPress_Attachment {
 
 	private function import( $obj ) {
 
+		global $titanpress;
+
 		$this->id = $obj->ID;
 		$this->guid = $obj->guid;
 		$this->slug = $obj->post_name;
 		$this->title = apply_filters( 'the_title', $obj->post_title );
 		$this->type = $obj->post_mime_type;
-		$this->thumbnail = $this->get_image_object($obj->ID, 'thumbnail');
-		$this->medium = $this->get_image_object($obj->ID, 'medium');
-		$this->large = $this->get_image_object($obj->ID, 'large');
-		$this->full = $this->get_image_object($obj->ID, 'full');
+
+		$image_sizes = get_intermediate_image_sizes();
+		foreach ($image_sizes as $size) {
+			$param = $titanpress->convert_to_camel_case($size);
+			$this->$param = $this->get_image_object($obj->ID, $size);
+		}
 
 	}
 

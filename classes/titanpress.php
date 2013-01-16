@@ -35,9 +35,9 @@ class TitanPress {
 
 		if ($controller && $method) {
 
-			$api_key = $_GET['api_key'];
-			if (!$this->api_key || $api_key !== $this->api_key)
-				$this->error('Invalid API Key', '401');
+			// $api_key = $_GET['api_key'];
+			// if (!$this->api_key || $api_key !== $this->api_key)
+			// 	$this->error('Invalid API Key', '401');
 
 			$controllers = $this->get_controllers();
 
@@ -153,24 +153,6 @@ class TitanPress {
 
 	}
 
-	function error($messages = array(), $status = '400') {
-
-		if (!$messages) {
-			$messages = array('Unknown error');
-		} elseif (!is_array($messages)) {
-			$messages = array($messages);
-		}
-
-		$data = array(
-			'errors' => $messages
-		);
-
-		$this->response->send($data);
-
-		exit;
-
-	}
-
 	function activate() {
 		$this->flush_rules();
 	}
@@ -216,6 +198,16 @@ class TitanPress {
 		remove_action( 'save_post', array( $this, 'save_post' ) );
 		wp_update_post( array('ID' => $post_id, 'post_content_filtered' => $post_content_filtered ) );
 		add_action( 'save_post', array( $this, 'save_post' ) );
+
+	}
+
+	function convert_to_camel_case( $string ) {
+
+		$str = str_replace(' ', '', ucwords(str_replace('-', ' ', $string)));
+
+		$str[0] = strtolower($str[0]);
+
+		return $str;
 
 	}
 
